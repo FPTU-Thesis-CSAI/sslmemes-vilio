@@ -223,14 +223,15 @@ def extract_feat(outfile, detector, pathXid):
         writer = csv.DictWriter(tsvfile, delimiter='\t', fieldnames=FIELDNAMES)
         for start in tqdm.tqdm(range(0, len(pathXid), args.batchsize)):
             pathXid_trunk = pathXid[start: start + args.batchsize]
-            dump_features(writer, detector, pathXid_trunk)
-            """
+            # dump_features(writer, detector, pathXid_trunk)
+            
             try:
                 dump_features(writer, detector, pathXid_trunk)
             except Exception as e:
                 print(e)
+                print(pathXid_trunk)
                 break
-            """
+            
 
 def load_image_ids(img_root):
     """images in the same directory are in the same split"""
@@ -238,10 +239,12 @@ def load_image_ids(img_root):
     img_root = os.path.join(img_root)
     for name in os.listdir(img_root):
         idx = name.split(".")[0]
-        pathXid.append(
-                (
-                    os.path.join(img_root, name),
-                    idx))
+        ext = name.split(".")[-1]
+        if ext in ['jpg', 'png']:
+            pathXid.append(
+                    (
+                        os.path.join(img_root, name),
+                        idx))
     # if split_dir == 'val2014':
     #     print("Place the features of minival in the front of val2014 tsv.")
     #     # Put the features of 5000 minival images in front.
@@ -323,7 +326,13 @@ if __name__ == "__main__":
     if not os.path.isdir(args.outputroot):
         os.makedirs(args.outputroot)
 
+    
+
     output_path = os.path.join(args.outputroot, './meme_{}{}{}.tsv'.format(args.weight, args.minboxes, args.maxboxes))
+
+    if os.path.isfile(output_path):
+        os.remove(output_path)
+
     extract_feat(output_path, detector, pathXid)
 
 ## NOTES:
